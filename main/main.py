@@ -7,16 +7,29 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from classes.food import Food
 from htrequest.httpsrequests import scrape_food
 
-# Entry point for the application
 if __name__ == "__main__":
     food_name = input("Enter the name of the food: ")
-    food_data = scrape_food(food_name)
+    food = Food(food_name)
 
-    food = Food(food_data["name"])
-    food._Food__calories = food_data["calories"]
-    food._Food__proteins = food_data["proteins"]
-    food._Food__carbs = food_data["carbs"]
-    food._Food__fat = food_data["fat"]
+    try:
+        food.retrieve_food_infos()
 
-    print(food)
+        food.display_food_infos()
+
+        # Save to CSV file
+        save_to_csv = input("Do you want to save the information to a CSV file? (yes/no): ").strip().lower()
+        if save_to_csv == 'yes':
+            file_name = f"{food_name}_info.csv"
+            food.save_to_csv_file(file_name)
+            print(f"Information saved to {file_name}")
+
+        if food.is_fat():
+            print(f"{food_name} is high in fat.")
+        else:
+            print(f"{food_name} is not high in fat.")
+
+    except RuntimeError as e:
+        print(e)
+    except ValueError as ve:
+        print(f"Error: {ve}")
 
