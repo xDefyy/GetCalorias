@@ -1,7 +1,8 @@
+import csv
+import re
+
 import requests
 from bs4 import BeautifulSoup
-import re
-import csv
 
 class Food:
     """class food"""
@@ -11,6 +12,12 @@ class Food:
         self.__fat = None
         self.__carbs = None
         self.__proteins = None
+
+    def get_name(self):
+        return self.__name
+
+    def set_name(self, name):
+        self.__name = name
 
     def __str__(self):
         return (
@@ -49,7 +56,7 @@ class Food:
         """Scrape the properties of the food from a website given its name."""
         url = f"https://www.infocalories.fr/calories/calories-{self.__name}.php"
         try:
-            response = requests.get(url)
+            response = requests.get(url, timeout=10)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -78,9 +85,13 @@ class Food:
                 raise ValueError("Could not find all nutritional information on the webpage.")
 
         except requests.exceptions.RequestException as e:
-            raise RuntimeError(f"Failed to retrieve food information: {e}")
+            raise RuntimeError(
+                f"Failed to retrieve food information: {e}"
+            ) from e
         except ValueError as ve:
-            raise RuntimeError(f"Error parsing nutritional information: {ve}")
+            raise RuntimeError(
+                f"Error parsing nutritional information: {ve}"
+            ) from ve
 
     def display_food_infos(self):
         """Display the properties of the food in a formatted table."""
@@ -91,10 +102,13 @@ class Food:
 
     def save_to_csv_file(self, file_name):
         """Save the properties of the food in a CSV file."""
-        with open(file_name, mode='w', newline='') as file:
+        with open(file_name, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow(["name", "calories", "fat", "carbs", "proteins"])
-            writer.writerow([self.__name, self.__calories, self.__fat, self.__carbs, self.__proteins])
+            writer.writerow(
+                [self.__name, self.__calories, self.__fat,
+                 self.__carbs, self.__proteins]
+            )
 
     def is_fat(self):
         """Return true or false whether the food has more than 20% of fat."""
